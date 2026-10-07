@@ -4,17 +4,17 @@
 #include <tchar.h>
 #include <time.h>
 
-const int m = 5, n = 6;  // 5 строк и 6 столбцов (чтобы аккуратно помещалось в консоль)
+const int m = 5, n = 6;  // 5 строк и 6 столбцов 
 float mtx[m][n];         // сама матрица в памяти
 int   row_numbers[m];    // массив номеров строк для передачи в потоки
 
 
-// Функция потока: заполняет ровно одну строку
+// Функция потока, которая заполняет ровно одну строку
 DWORD WINAPI fill_row(LPVOID param)
 {
     int row_num = *((int*)param); // лежит номер строки (0-4)
 
-    // Инициализируем генератор уникальным значением для текущего потока
+    // Генератор уникальных значений
     srand((unsigned int)(time(NULL) ^ GetCurrentThreadId()));
 
     // Заполняем строку случайными числами
@@ -44,11 +44,11 @@ int _tmain(int argc, _TCHAR* argv[])
     {
         hThread[i] = CreateThread(
             NULL,
-            0,
+            0, // размер стека
             fill_row,
-            &(row_numbers[i]),
-            0,
-            &(dwThreadID[i])
+            &(row_numbers[i]), // аргумент, который передастся в fill_row как параметр
+            0, // флаги создания
+            &(dwThreadID[i]) // адрес переменной для id потока
         );
 
         if (hThread[i] == NULL)
@@ -58,7 +58,7 @@ int _tmain(int argc, _TCHAR* argv[])
     }
 
     // Ждем, пока все потоки закончат заполнение
-    WaitForMultipleObjects(m, hThread, TRUE, INFINITE);
+    WaitForMultipleObjects(m, hThread, TRUE, INFINITE); // точка синхронизации
 
     std::cout << "Все потоки завершили работу. Результирующая матрица:\n\n";
 
