@@ -9,18 +9,25 @@ float mtx[m][n];         // сама матрица в памяти
 int   row_numbers[m];    // массив номеров строк для передачи в потоки
 
 
+#include <random>
+
 // Функция потока, которая заполняет ровно одну строку
 DWORD WINAPI fill_row(LPVOID param)
 {
-    int row_num = *((int*)param); // лежит номер строки (0-4)
+    int row_num = *((int*)param); // номер строки (0-4)
 
-    // Генератор уникальных значений
-    srand((unsigned int)(time(NULL) ^ GetCurrentThreadId()));
+    // Инициализируем генератор для конкретного потока.
+    // Используем seed-последовательность из времени и ID потока для уникальности
+    std::seed_seq seed{ (unsigned int)time(NULL), (unsigned int)GetCurrentThreadId() };
+    std::mt19937 gen(seed);
+    
+    // Задаем диапазон для вещественных чисел (например, от -50.0 до 50.0)
+    std::uniform_real_distribution<float> dist(-50.0f, 50.0f);
 
     // Заполняем строку случайными числами
     for (int j = 0; j < n; j++)
     {
-        mtx[row_num][j] = (float)(rand() % 100);
+        mtx[row_num][j] = dist(gen); // Генерирует вещественное число (и полож., и отриц.)
     }
     return 0;
 }
